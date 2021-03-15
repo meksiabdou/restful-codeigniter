@@ -32,19 +32,6 @@ class Token
         
         $user->token = $this->generate_key($user);
 
-        /*$cookie = [
-            'name'   => 'token',
-            'value'  => $user->token,
-            'expire' => time() + $this->rememberLength,
-            'domain' => 'cdr.loc',
-            'path'   => '/',
-            'prefix' => '',
-            'secure' => FALSE,
-            'httponly' => FALSE
-        ];
-    
-        $this->response->setCookie($cookie);
-        */
         return $user;
     }
 
@@ -70,9 +57,6 @@ class Token
             'device' => $device,
             'expires' => $expires,
         ]);
-        //$this->loginModel->rememberUser($user->id, $selector, hash('sha256', $validator), $expires);
-
-        // Save it to the user's browser in a cookie.
 
         return $token;
     }

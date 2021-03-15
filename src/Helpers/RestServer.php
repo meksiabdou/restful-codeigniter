@@ -26,14 +26,6 @@ class RestServer extends ResourceController
         'reSendActivateAccount',
         'forgot',
         'reset',
-        "stores",
-        "coupons",
-        "storesById",
-        "categories",
-        "loginWithSocialMedia",
-        'getPages',
-        'emailing',
-        'localisation'
     ];
 
     protected $users;
@@ -52,10 +44,10 @@ class RestServer extends ResourceController
             try {
                 return $this->$method(...$params);
             } catch (Exception $e) {
-                return $this->respond(["status" => false, "code" => [3001], "error" => 'Error 500',  'description' => CI_DEBUG ? $e->getMessage() : '']);
+                return $this->response_json(["code" => [500], "error" => 'Error 500',  'description' => CI_DEBUG ? $e->getMessage() : ''], false, 500);
             }
         } else {
-            return $this->respond(["status" => false, "code" => [3001] ,"error" => 'token !!', 'description' => ''], 403);
+            return $this->response_json(["code" => [403], "error" => 'API forbidden',  'description' => ''], false, 403);
         }
     }
 
@@ -173,6 +165,5 @@ class RestServer extends ResourceController
             $this->array_methods = [...$this->array_methods, ...$method];
         }
 
-        //return  $this->array_methods;
     }
 }

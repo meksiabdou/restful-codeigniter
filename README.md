@@ -75,7 +75,7 @@ public function store($requestData=null) {
 }
 ```
 
-Output with status `201 Created`:
+Output with status `201`:
 
 ```json
 {

@@ -85,7 +85,6 @@ class Auth extends RestServer
 		$rules = [
 			'identity'	=> 'required',
 			'password' => 'required',
-			'device' => 'required',
 		];
 
 		if ($this->config->validFields == ['email']) {
@@ -98,7 +97,6 @@ class Auth extends RestServer
 
 		$identity = $this->request->getPost('identity');
 		$password = $this->request->getPost('password');
-		$device = $this->request->getPost('device');
 		$remember = false;
 
 
@@ -114,8 +112,6 @@ class Auth extends RestServer
 			}
 
 			$user = $this->auth->user();
-
-			$user->device = $device;
 
 			if ($user) {
 				$user =  $token->generateToken($user);
@@ -234,7 +230,7 @@ class Auth extends RestServer
 
 		$userData['username'] = explode("@", $this->request->getPost('email'))[0];
 
-		//$userData['referral_code'] = random_string('alnum', 8);
+		// $userData['referral_code'] = random_string('alnum', 8);
 
 
 		$user = new User($userData);
@@ -565,14 +561,8 @@ class Auth extends RestServer
 		$email = $this->request->getPost('email');
 		$password = $this->request->getPost('password');
 
-		try {
-			if (!$this->auth->attempt(['email' => $email, 'password' => $password], false)) {
-				return $this->response_json(['code' => [3002], 'description' => $this->auth->error()], false);
-			}
-		} catch (Exception $e) {
-			if (!$this->auth->user()) {
-				return $this->response_json(['code' => [3002], 'description' => $e->getMessage()], false);
-			}
+		if (!$this->auth->attempt(['email' => $email, 'password' => $password], false)) {
+			return $this->response_json(['code' => [3002], 'description' => $this->auth->error()], false);
 		}
 
 		$user = $this->auth->user();

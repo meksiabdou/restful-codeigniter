@@ -28,7 +28,7 @@ class RestServer extends ResourceController
         'reset',
     ];
 
-    protected $users;
+    protected $user = null;
 
     public function __construct()
     {
@@ -37,26 +37,28 @@ class RestServer extends ResourceController
 
     public function _remap($method, ...$params)
     {
-
-        $auth = $this->auth($method, $params);
-
-        if ($auth === true) {
-            try {
+        try {
+            $auth = $this->auth($method, $params);
+            if ($auth === true) {
                 return $this->$method(...$params);
-            } catch (Exception $e) {
-                return $this->response_json(["code" => [500], "error" => 'Error 500',  'description' => CI_DEBUG ? $e->getMessage() : ''], false, 500);
             }
-        } else {
-            return $this->response_json(["code" => [403], "error" => 'API forbidden',  'description' => ''], false, 403);
+            return $this->respond(["status" => false, "code" => [3001], "error" => 'token !!', 'description' => ''], 403);
+        } catch (Exception $e) {
+            return $this->respond(["status" => false, "code" => [3001], "error" => 'Error 500',  'description' => CI_DEBUG ? $e->getMessage() : ''], 500);
         }
+    }
+
+    protected function device() {
+        $agent = $this->request->getUserAgent();
+        return  $agent->getBrowser() . '.' . $agent->getVersion() . '.' . $agent->getPlatform();
     }
 
     private function auth($method, $params)
     {
 
-        $this->config = new Configs();
-
         try {
+
+            $this->config = new Configs();
 
             $post = [];
             $get = $this->request->getGet();
@@ -64,17 +66,17 @@ class RestServer extends ResourceController
 
             $data = [
                 'token' => null,
-                'uri' => $this->request->getServer(['REQUEST_URI']),
+                'uri' => $this->request->getServer('REQUEST_URI'),
                 'ip_address' => $this->request->getIPAddress(),
                 'method_request' => $this->request->getMethod(TRUE),
                 'method' => $method,
                 'params' => json_encode(['params' => $params, 'post' => $post, 'get' => $get], true),
                 'agent' => json_encode([
-                    'robot' => $agent->isRobot() ? $this->agent->robot(): false,
-                    'browser' => $agent->isBrowser() ?  $agent->getBrowser().'.'.$agent->getVersion() : false,
-                    'mobile' => $agent->isMobile() ? $agent->getMobile(): false,
+                    'robot' => $agent->isRobot() ? $this->agent->robot() : false,
+                    'browser' => $agent->isBrowser() ?  $agent->getBrowser() . '.' . $agent->getVersion() : false,
+                    'mobile' => $agent->isMobile() ? $agent->getMobile() : false,
                     'platform' => $agent->getPlatform(),
-                    'referrer' => $agent->isReferral()? $agent->getReferrer(): false,
+                    'referrer' => $agent->isReferral() ? $agent->getReferrer() : false,
                 ], true),
                 'date' => Time::createFromTimestamp(time(), $this->config->appTimezone),
                 'authorized' => 0,
@@ -82,16 +84,18 @@ class RestServer extends ResourceController
 
             $status = false;
 
-            if ($this->request->getHeader('token')) {
+            if ($this->request->getHeader('token') && !$agent->isRobot()) {
 
                 $this->token = $this->request->getHeader('token')->getValue();
-                $this->token_app = (isset($this->config->token_app)) ? $this->config->token_app : '';
+                $this->token_app = isset($this->config->token_app) && is_array($this->config->token_app) ? $this->config->token_app : [];
+
+                $device = $this->request->getHeader('device') ? $this->request->getHeader('device')->getValue() : $this->device();
 
                 $data['token'] = $this->token;
 
                 if (in_array($method, $this->array_methods)) {
 
-                    if (!in_array($this->token, $this->token_app) || $agent->isRobot()) {
+                    if (!in_array($this->token, $this->token_app)) {
                         $data['authorized'] = 0;
                         $status = false;
                     } else {
@@ -116,8 +120,16 @@ class RestServer extends ResourceController
                             ->getRow();
 
                         if ($getToken) {
-                            $data['authorized'] = 1;
-                            $status = true;
+
+                            if (strtolower($device) === strtolower($getToken->device)) {
+                                $data['authorized'] = 1;
+                                $status = true;
+                                $this->user = $getToken->user_id;
+                            } else {
+                                $data['authorized'] = 0;
+                                $status = false;
+                                $query->deleteDataWhere(['id' => $getToken->id]);
+                            }
                         } else {
                             $data['authorized'] = 0;
                             $status = false;
@@ -135,8 +147,7 @@ class RestServer extends ResourceController
             $this->logs($data);
             return $status;
         } catch (Exception $e) {
-            //return $e->getMessage();
-            return false;
+            throw new Exception($e);
         }
     }
 
@@ -158,12 +169,20 @@ class RestServer extends ResourceController
         return $this->respond(["status" => $status, "results" => $data], $statusCode);
     }
 
-
-    public function setMethod($method = [])
+    public function getUserId()
     {
-        if(isset($method)){
-            $this->array_methods = [...$this->array_methods, ...$method];
-        }
+        return $this->user;
+    }
 
+    public function setMethod($methods = [])
+    {
+        if (is_array($methods)) {
+            $this->array_methods = [...$this->array_methods, ...$methods];
+        } else {
+
+            if (!empty($methods)) {
+                $this->array_methods = [...$this->array_methods, $methods];
+            }
+        }
     }
 }

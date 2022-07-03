@@ -20,7 +20,7 @@ $routes->group('api', ['namespace' => 'CI4Restful\Controllers\Api'], function($r
 
 
     //update data user
-    $routes->post('update-user', 'Auth::update_user', ['as' => 'update-user']);
+    $routes->put('update-user', 'Auth::update_user', ['as' => 'update-user']);
     //update password
-    $routes->post('update', 'Auth::update_password', ['as' => 'update']);
+    $routes->put('p/update', 'Auth::update_password', ['as' => 'update']);
 });

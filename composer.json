@@ -1,32 +1,33 @@
 {
-    "name": "meksiabdou/ci4-restful",
-    "description" : "",
-    "keywords": [
-        "codeigniter",
-        "authentication",
-        "restFul",
-        "api"
-    ],
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Meksi Abdou",
-            "email": "meksiabdou@gmail.com",
-            "role": "Developer"
-        }
-    ],
-    "minimum-stability": "beta",
-    "require": {
-        "php": ">=7.2"
-    },
-    "require-dev": {
-        "codeigniter4/framework": "^4",
-        "agungsugiarto/codeigniter4-cors": "^1.0",
-        "myth/auth": "^1.0@beta"
-    },
-    "autoload": {
-        "psr-4": {
-            "CI4Restful\\": "src"
-        }
+  "name": "meksiabdou/ci4-restful",
+  "version" : "1.0.0",
+  "description": "",
+  "keywords": [
+    "codeigniter",
+    "authentication",
+    "restFul",
+    "api"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Meksi Abdou",
+      "email": "meksiabdou@gmail.com",
+      "role": "Developer"
     }
+  ],
+  "minimum-stability": "beta",
+  "require": {
+    "php": ">=7.3",
+    "agungsugiarto/codeigniter4-cors": "^v2.0.0",
+    "myth/auth": "^v1.0.1"
+  },
+  "require-dev": {
+    "codeigniter4/framework": "^v4.2.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "CI4Restful\\": "src"
+    }
+  }
 }

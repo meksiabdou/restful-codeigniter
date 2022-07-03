@@ -22,19 +22,7 @@ class Email
     public function __construct()
     {
 
-        //contact@recashit.com
         $this->config = new CEmail();
-        $this->config->fromName = "";
-        $this->config->protocol = "smtp";
-
-        $this->config->fromEmail = "cantact@example.eu";
-        $this->config->SMTPHost = "example.eu";
-        $this->config->SMTPUser = "cantact@example.eu";
-        $this->config->SMTPPass = "";
-
-        $this->config->SMTPPort = 25;
-        $this->config->SMTPTimeout = 30;
-        $this->config->SMTPCrypto = "";
 
         $this->email = Services::email();
 

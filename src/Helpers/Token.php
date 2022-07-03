@@ -10,14 +10,18 @@ class Token
 
     private $loginModel;
     public $rememberLength;
-    public $response;
+    protected $request;
 
     public function __construct($rememberLength = 5)
     {
         $this->loginModel = new LoginModel();
         $this->rememberLength = $rememberLength * DAY;
-        //$this->response = service('response');
+        $this->request = service('request');
+    }
 
+    protected function device() {
+        $agent = $this->request->getUserAgent();
+        return  $agent->getBrowser() . '.' . $agent->getVersion() . '.' . $agent->getPlatform();
     }
 
     function generateToken($user)
@@ -29,7 +33,7 @@ class Token
         unset($user->reset_expires);
         unset($user->activate_hash);
 
-        
+
         $user->token = $this->generate_key($user);
 
         return $user;
@@ -39,25 +43,31 @@ class Token
     {
 
         $this->loginModel->purgeOldRememberTokens();
+        $agent = $this->request->getUserAgent();
 
         $selector  = bin2hex(random_bytes(12));
         $validator = bin2hex(random_bytes(20));
         $expires   = date('Y-m-d H:i:s', time() + $this->rememberLength);
-        $device = $user->device;
+        //$device = $user->device;
+        $device = $this->request->getHeader('device') ? $this->request->getHeader('device')->getValue() : $this->device();
 
         $token = $selector . ':' . $validator;
 
         // Store it in the database
         $query = new QueryModel('auth_tokens');
 
-        $query->insertToDb([
+        $response = $query->insertToDb([
             'user_id' => $user->id,
             'selector' => $selector,
             'hashedValidator' => hash('sha256', $validator),
             'device' => $device,
             'expires' => $expires,
         ]);
+        
+        if ($response) {
+            return $token;
+        }
 
-        return $token;
+        return null;
     }
 }

@@ -202,7 +202,7 @@ formData.append('password', 'password123');
 var requestOptions = {
   method: 'POST',
   headers: {
-    "token" ; "2ve7Wq9P2QLnzQMlN2uVnBfb10xvOY0NQTuQ7Q"
+    "token" : "2ve7Wq9P2QLnzQMlN2uVnBfb10xvOY0NQTuQ7Q"
    },
   body: formData, 
   redirect: 'follow'
@@ -227,7 +227,7 @@ formData.append('confirmPassword', 'newPassword123');
 var requestOptions = {
   method: 'PUT',
   headers: {
-    "token" ; userToken,
+    "token" : userToken,
    },
    body: formData, 
   redirect: 'follow'
